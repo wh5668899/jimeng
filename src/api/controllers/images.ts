@@ -245,8 +245,16 @@ export async function generateImages(
   }
   return item_list.map((item) => {
     if(!item?.image?.large_images?.[0]?.image_url)
-      return item?.common_attr?.cover_url || null;
-    return item.image.large_images[0].image_url;
+      return {
+        cover_url: item?.common_attr?.cover_url || "",
+        webp: item?.common_attr?.cover_url_map?.['2400'] || null,
+        jpeg: null
+      };
+    return {
+      cover_url: item?.common_attr?.cover_url || "",
+      webp: item?.common_attr?.cover_url_map?.['2400'] || null,
+      jpeg: item.image.large_images[0].image_url
+    };
   });
 }
 
