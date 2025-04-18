@@ -130,8 +130,17 @@ export async function generateImages(
   if (!historyId)
     throw new APIException(EX.API_IMAGE_GENERATION_FAILED, "记录ID不存在");
   let status = 20, failCode, item_list = [];
-  while (status === 20) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  let retryCount = 0;
+  const maxRetries = 60; // 最大重试次数
+  const initialDelay = 1000; // 初始延迟1秒
+  const maxDelay = 5000; // 最大延迟5秒
+  
+  while (status === 20 && retryCount < maxRetries) {
+    // 使用指数退避算法增加延迟时间
+    const delay = Math.min(initialDelay * Math.pow(2, retryCount), maxDelay);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    
+    retryCount++;
     const result = await request("post", "/mweb/v1/get_history_by_ids", refreshToken, {
       data: {
         history_ids: [historyId],
@@ -236,6 +245,9 @@ export async function generateImages(
     status = result[historyId].status;
     failCode = result[historyId].fail_code;
     item_list = result[historyId].item_list;
+  }
+  if (retryCount >= maxRetries) {
+    throw new APIException(EX.API_IMAGE_GENERATION_FAILED, "图片生成超时");
   }
   if (status === 30) {
     if (failCode === '2038')
