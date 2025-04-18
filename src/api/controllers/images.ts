@@ -131,8 +131,8 @@ export async function generateImages(
     throw new APIException(EX.API_IMAGE_GENERATION_FAILED, "记录ID不存在");
   let status = 20, failCode, item_list = [];
   let retryCount = 0;
-  const maxRetries = 60; // 最大重试次数
-  const initialDelay = 1000; // 初始延迟1秒
+  const maxRetries = 10; // 最大重试次数
+  const initialDelay =2000; // 初始延迟1秒
   const maxDelay = 5000; // 最大延迟5秒
   
   while (status === 20 && retryCount < maxRetries) {
@@ -258,12 +258,14 @@ export async function generateImages(
   return item_list.map((item) => {
     if(!item?.image?.large_images?.[0]?.image_url)
       return {
-        cover_url: item?.common_attr?.cover_url || "",
+        cover_1: item?.common_attr?.cover_url_map?.['1080'] || "",
+        cover_2: item?.common_attr?.cover_url || "",
         webp: item?.common_attr?.cover_url_map?.['2400'] || null,
         jpeg: null
       };
     return {
-      cover_url: item?.common_attr?.cover_url || "",
+      cover_1: item?.common_attr?.cover_url_map?.['1080'] || "",
+      cover_2: item?.common_attr?.cover_url || "",
       webp: item?.common_attr?.cover_url_map?.['2400'] || null,
       jpeg: item.image.large_images[0].image_url
     };
